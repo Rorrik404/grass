@@ -92,7 +92,7 @@ def download_extension(extension_id):
 
 
 
-def generate_error_report(driver):
+async def generate_error_report(driver):
     if ALLOW_DEBUG == False:
         return
     #grab screenshot
@@ -103,7 +103,7 @@ def generate_error_report(driver):
         for log in logs:
             f.write(str(log))
             f.write('\n')
-    send_photo()
+    await send_photo()
 
     # url = 'https://imagebin.ca/upload.php'
     # files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
