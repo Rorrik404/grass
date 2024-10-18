@@ -1,5 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
@@ -86,6 +88,7 @@ options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument('--no-sandbox')
+options.add_argument("window-size=1200x600")
 
 options.add_extension('grass.crx')
 
@@ -127,6 +130,13 @@ while True:
 user = driver.find_element('xpath', '//*[@name="user"]')
 passw = driver.find_element('xpath', '//*[@name="password"]')
 submit = driver.find_element('xpath', '//*[@type="submit"]')
+
+# Define a wait with a timeout of 10 seconds
+wait = WebDriverWait(driver, 10)
+
+# Wait until element is present, visible, and interactable
+element = wait.until(user.element_to_be_clickable((By.xpath, "//*[@name="user"]")))
+
 
 #get user from env
 user.send_keys(USER)
