@@ -28,14 +28,16 @@ from flask import Flask
 import hashlib
 import sys
 
-BOT_TOKEN = os.environ.get('BOT_TOKEN')
-GROUPID = os.environ.get('BOT_GroupID') 
+BOT_TOKEN = '7776316269:AAES2yNl__LEAsFJDIlxcK0ZytLwX-oO5Co'
+GROUPID = -4026028372
 
 """Start the bot."""
 print ("Starting Telegram bot...")
 # Create the Application and pass it your bot's token.
-application = Application.builder().token("TOKEN").build()
-application.run_polling(allowed_updates=Update.ALL_TYPES)
+application = Application.builder().token(BOT_TOKEN).build()
+#application.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Start the Bot
+#application.start_polling()
 print ("Telegram bot polling!")
 
 async def send_photo(context: ContextTypes.DEFAULT_TYPE) -> None:
