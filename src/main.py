@@ -134,8 +134,9 @@ submit = driver.find_element('xpath', '//*[@type="submit"]')
 # Define a wait with a timeout of 10 seconds
 wait = WebDriverWait(driver, 10)
 
+print('Waiting until clickable...')
 # Wait until element is present, visible, and interactable
-element = wait.until(user.element_to_be_clickable((By.xpath, "//*[@name="user"]")))
+element = wait.until(user.element_to_be_clickable(user))
 
 
 #get user from env
