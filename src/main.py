@@ -9,6 +9,16 @@ from webdriver_manager.core.os_manager import ChromeType
 
 from selenium.common.exceptions import WebDriverException, NoSuchDriverException
 
+import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+# Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
 import time
 import requests
 import os
@@ -17,6 +27,24 @@ import base64
 from flask import Flask
 import hashlib
 import sys
+
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+GROUPID = os.environ.get('BOT_GroupID') 
+
+"""Start the bot."""
+print ("Starting Telegram bot...")
+# Create the Application and pass it your bot's token.
+application = Application.builder().token("TOKEN").build()
+application.run_polling(allowed_updates=Update.ALL_TYPES)
+print ("Telegram bot polling!")
+
+async def send_photo(context: ContextTypes.DEFAULT_TYPE) -> None:
+    # The path to your local photo
+    photo_path = 'error.png'
+    
+    # Send the photo
+    await context.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
+
 
 extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
 CRX_URL = "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=98.0.4758.102&acceptformat=crx2,crx3&x=id%3D~~~~%26uc&nacl_arch=x86-64"
@@ -73,11 +101,12 @@ def generate_error_report(driver):
         for log in logs:
             f.write(str(log))
             f.write('\n')
+    send_photo()
 
-    url = 'https://imagebin.ca/upload.php'
-    files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
-    response = requests.post(url, files=files)
-    print(response.text)
+    # url = 'https://imagebin.ca/upload.php'
+    # files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
+    # response = requests.post(url, files=files)
+    # print(response.text)
     print('Error report generated! Provide the above information to the developer for debugging purposes.')
 
 print('Downloading extension...')
@@ -138,7 +167,7 @@ wait = WebDriverWait(driver, 10)
 print('Waiting until clickable...')
 # Wait until element is present, visible, and interactable
 errors = [NoSuchElementException, ElementNotInteractableException]
-wait = WebDriverWait(driver, timeout=20, poll_frequency=.2, ignored_exceptions=errors)
+wait = WebDriverWait(driver, timeout=5, poll_frequency=.2, ignored_exceptions=errors)
 try:
     wait.until(lambda d : user.send_keys(USER) or True)
 except:
