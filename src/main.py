@@ -40,12 +40,12 @@ application = Application.builder().token(BOT_TOKEN).build()
 #application.start_polling()
 print ("Telegram bot polling!")
 
-async def send_photo():
+def send_photo():
     # The path to your local photo
     photo_path = 'error.png'
     
     # Send the photo
-    await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
+    application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
 
 extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
@@ -92,7 +92,7 @@ def download_extension(extension_id):
 
 
 
-async def generate_error_report(driver):
+def generate_error_report(driver):
     if ALLOW_DEBUG == False:
         return
     #grab screenshot
@@ -103,7 +103,7 @@ async def generate_error_report(driver):
         for log in logs:
             f.write(str(log))
             f.write('\n')
-    await send_photo()
+    send_photo()
 
     # url = 'https://imagebin.ca/upload.php'
     # files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
