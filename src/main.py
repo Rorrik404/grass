@@ -139,7 +139,15 @@ print('Waiting until clickable...')
 # Wait until element is present, visible, and interactable
 errors = [NoSuchElementException, ElementNotInteractableException]
 wait = WebDriverWait(driver, timeout=20, poll_frequency=.2, ignored_exceptions=errors)
-wait.until(lambda d : user.send_keys(USER) or True)
+try:
+    wait.until(lambda d : user.send_keys(USER) or True)
+except:
+    print('Could not wait for user! Exiting...')
+    generate_error_report(driver)
+    driver.quit()
+    exit()
+
+
 
 print ('Wait Returned for User, trying password...')
 
