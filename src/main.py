@@ -40,12 +40,12 @@ application = Application.builder().token(BOT_TOKEN).build()
 #application.start_polling()
 print ("Telegram bot polling!")
 
-async def send_photo(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def send_photo():
     # The path to your local photo
     photo_path = 'error.png'
     
     # Send the photo
-    await context.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
+    await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
 
 extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
