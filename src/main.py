@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common import NoSuchElementException, ElementNotInteractableException
 
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
@@ -136,11 +137,14 @@ wait = WebDriverWait(driver, 10)
 
 print('Waiting until clickable...')
 # Wait until element is present, visible, and interactable
-element = wait.until(user.element_to_be_clickable(user))
+errors = [NoSuchElementException, ElementNotInteractableException]
+wait = WebDriverWait(driver, timeout=2, poll_frequency=.2, ignored_exceptions=errors)
+wait.until(lambda d : user.send_keys("USER") or True)
 
+print ('Wait Returned for User, trying password...')
 
 #get user from env
-user.send_keys(USER)
+#user.send_keys(USER)
 passw.send_keys(PASSW)
 submit.click()
 
