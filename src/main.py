@@ -173,17 +173,17 @@ wait = WebDriverWait(driver, 5)
 
 try:
     print('Checking for Accept All...')    
-    wait.until(lambda d : driver.find_element(By.XPATH, "//button[text()='ACCEPT ALL']")).click()
+    wait.until(EC.presence_of_element_located(By.XPATH, "//button[text()='ACCEPT ALL']")).click()
 except:
     print('Could not find Accept All...continuing...')    
 
 try:
     print('Waiting for login form...')
-    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@name="user"]')).send_keys(USER)
+    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="user"]')).send_keys(USER)
     print('User populated!')
-    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@name="password"]')).send_keys(PASSW)
+    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="password"]')).send_keys(PASSW)
     print('Password populated!')
-    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@type="submit"]')).click()
+    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@type="submit"]')).click()
     print('Login button clicked!')
 except:
     print('Could not populate login form! Exiting...')
@@ -192,7 +192,7 @@ except:
     exit()
 
 try:
-    wait.until(lambda d : driver.find_element(By.XPATH, '//*[contains(text(), "Dashboard")]'))
+    wait.until(EC.presence_of_element_located(By.XPATH, '//*[contains(text(), "Dashboard")]'))
 except:
     print('Could not login! Double Check your username and password! Exiting...')
     generate_error_report(driver)
@@ -227,31 +227,26 @@ def status():
 
     print('Getting network quality...')
     try:
-        # network_quality = driver.find_element(By.XPATH, '//*[contains(text(), "Network Quality")]').text
-        # network_quality = re.findall(r'\d+', network_quality)[0]
-
-
-        # Locate the element containing the "Network Quality" text
-        network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
-        parent_div = network_quality_label.find_element(By.XPATH, './..')
-        percent_element = parent_div.find_element(By.XPATH, ".//*[contains(text(), '%')]")
-
+        # Find the "Network Quality" text label
+        network_quality_label =  wait.until(EC.presence_of_element_located(By.XPATH, "//p[contains(text(), 'Network Quality')]"))
+        # Now find the following <p> element that contains the percentage value
+        network_quality_percent = network_quality_label.find_element(By.XPATH, "following-sibling::p").text
         # Get the text value
-        network_quality = percent_element.text
+        network_quality = re.findall(r'\d+', network_quality_percent)[0]
     except Exception as e:
         network_quality = False
-        print('Could not get network quality!: ' + str(e))
+        print('Could not get network quality!')
         generate_error_report(driver)
 
     print('Getting earnings...')
     try:
-        token = driver.find_element(By.XPATH, '//*[@alt="token"]')
-        token = token.find_element(By.XPATH('following-sibling::div'))
-        epoch_earnings = token.text
-        print (token)
+        # Find the <img> tag with the alt attribute "token"
+        token_image = wait.until(EC.presence_of_element_located((By.XPATH, "//img[@alt='token']")))
+        # Now find the next sibling div that contains the earnings value
+        epoch_earnings = token_image.find_element(By.XPATH, "following-sibling::div/p").text
     except Exception as e:
         epoch_earnings = False
-        print('Could not get earnings!: ' + str(e))
+        print('Could not get earnings!')
         generate_error_report(driver)
     
     print('Getting connection status...')
@@ -260,7 +255,7 @@ def status():
         connected = True
     except Exception as e:
         connected = False
-        print('Could not get confirmation of connection!: ' + str(e))
+        print('Could not get confirmation of connection!')
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
@@ -274,8 +269,6 @@ def showme():
     asyncio.run(send_photo_to_chat('error.png')) 
     #grab console logs
     asyncio.run(send_file_to_chat(get_html_data()))
-    #logs = driver.get_log('browser') 
-    #asyncio.run(send_message_to_chat('Console logs: ' + str(logs)))
     
     return {'Status':'Data Sent!'}
 
