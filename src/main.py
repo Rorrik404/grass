@@ -31,6 +31,10 @@ import sys
 
 BOT_TOKEN = '7776316269:AAES2yNl__LEAsFJDIlxcK0ZytLwX-oO5Co'
 GROUPID = -4026028372
+extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
+CRX_URL = "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=98.0.4758.102&acceptformat=crx2,crx3&x=id%3D~~~~%26uc&nacl_arch=x86-64"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
+
 
 # Function to send a photo to a specific chat and then disconnect
 async def send_photo_to_chat(photo_path: str) -> None:
@@ -42,10 +46,7 @@ async def send_photo_to_chat(photo_path: str) -> None:
         await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
 
-extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
-CRX_URL = "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=98.0.4758.102&acceptformat=crx2,crx3&x=id%3D~~~~%26uc&nacl_arch=x86-64"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
-
+print('Starting...')
 try:
     ALLOW_DEBUG = os.environ['ALLOW_DEBUG']
     if ALLOW_DEBUG == 'True':
@@ -76,8 +77,6 @@ if USER == '' or PASSW == '':
     exit()
 
 
-
-
 #https://gist.github.com/ckuethe/fb6d972ecfc590c2f9b8
 def download_extension(extension_id):
     url = CRX_URL.replace("~~~~", extension_id)
@@ -90,7 +89,6 @@ def download_extension(extension_id):
         #generate md5 of file
         md5 = hashlib.md5(open('grass.crx', 'rb').read()).hexdigest()
         print('Extension MD5: ' + md5)
-
 
 
 def generate_error_report(driver):
@@ -183,7 +181,7 @@ driver.get('chrome-extension://'+extensionId+'/index.html')
 sleep = 0
 while True:
     try:
-        driver.find_element('xpath', '//*[contains(text(), "Open dashboard")]')
+        driver.find_element(By.XPATH, '//*[contains(text(), "Desktop dashboard")]')
         break
     except:
         time.sleep(1)
