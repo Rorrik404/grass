@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common import NoSuchElementException, ElementNotInteractableException
 
@@ -142,73 +143,42 @@ except (WebDriverException, NoSuchDriverException) as e:
         exit()
 
 #driver.get('chrome-extension://'+extensionId+'/index.html')
-print('Started! Logging in...')
+print('Loading dashboard...')
 driver.get('https://app.getgrass.io/')
 
-sleep = 0
-while True:
-    try:
-        driver.find_element('xpath', '//*[@name="user"]')
-        driver.find_element('xpath', '//*[@name="password"]')
-        driver.find_element('xpath', '//*[@type="submit"]')
-        break
-    except:
-        time.sleep(1)
-        print('Loading login form...')
-        sleep += 1
-        if sleep > 15:
-            print('Could not load login form! Exiting...')
-            generate_error_report(driver)
+# Define a wait with a timeout of 5 seconds
 
-            driver.quit()
-            exit()
+wait = WebDriverWait(driver, 5)
 
-#find name="user"
-user = driver.find_element('xpath', '//*[@name="user"]')
-passw = driver.find_element('xpath', '//*[@name="password"]')
-submit = driver.find_element('xpath', '//*[@type="submit"]')
-
-# Define a wait with a timeout of 10 seconds
-wait = WebDriverWait(driver, 10)
-
-print('Waiting until clickable...')
-# Wait until element is present, visible, and interactable
-errors = [NoSuchElementException, ElementNotInteractableException]
-wait = WebDriverWait(driver, timeout=5, poll_frequency=.2, ignored_exceptions=errors)
 try:
-    wait.until(lambda d : user.send_keys(USER) or True)
+    print('Checking for Accept All...')    
+    wait.until(lambda d : driver.find_element(By.XPATH, "//button[text()='ACCEPT ALL']")).click()
 except:
-    print('Could not wait for user! Exiting...')
+    print('Could not find Accept All...continuing...')    
+
+try:
+    print('Waiting for login form...')
+    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@name="user"]')).send_keys(USER)
+    print('User populated!')
+    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@name="password"]')).send_keys(PASSW)
+    print('Password populated!')
+    wait.until(lambda d : driver.find_element(By.XPATH, '//*[@type="submit"]')).click()
+    print('Login button clicked!')
+except:
+    print('Could not populate login form! Exiting...')
+    generate_error_report(driver)
+    driver.quit()
+    exit()
+
+try:
+    wait.until(lambda d : driver.find_element(By.XPATH, '//*[contains(text(), "Dashboard")]'))
+except:
+    print('Could not login! Double Check your username and password! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
 
 
-
-print ('Wait Returned for User, trying password...')
-
-#get user from env
-#user.send_keys(USER)
-passw.send_keys(PASSW)
-submit.click()
-
-#id="chakra-toast-manager-top-right" is the toast
-
-
-sleep = 0
-while True:
-    try:
-        e = driver.find_element('xpath', '//*[contains(text(), "Dashboard")]')
-        break
-    except:
-        time.sleep(1)
-        print('Logging in...')
-        sleep += 1
-        if sleep > 30:
-            print('Could not login! Double Check your username and password! Exiting...')
-            generate_error_report(driver)
-            driver.quit()
-            exit()
 
 print('Logged in! Waiting for connection...')
 driver.get('chrome-extension://'+extensionId+'/index.html')
