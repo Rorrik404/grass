@@ -14,11 +14,6 @@ import logging
 from telegram.ext import Application
 import asyncio
 
-# Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-logger = logging.getLogger(__name__)
 
 import time
 import requests
@@ -28,6 +23,41 @@ import base64
 from flask import Flask
 import hashlib
 import sys
+
+try:
+    ALLOW_DEBUG = os.environ['ALLOW_DEBUG']
+    if ALLOW_DEBUG == 'True':
+        ALLOW_DEBUG = True
+    else:
+        ALLOW_DEBUG = False
+except:
+    ALLOW_DEBUG = False
+
+# Setup logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('app.log')
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Set the log level
+if ALLOW_DEBUG == True:
+    file_handler.setLevel(logging.debug)
+    console_handler.setLevel(logging.DEBUG)
+else:
+    file_handler.setLevel(logging.error)
+    console_handler.setLevel(logging.error)
+
+# Set the formatter
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+# Add the handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+if ALLOW_DEBUG == True:
+    logger.debug('Debugging is enabled! This will generate a screenshot and console logs on error!')
 
 BOT_TOKEN = '7776316269:AAES2yNl__LEAsFJDIlxcK0ZytLwX-oO5Co'
 GROUPID = -4026028372
@@ -66,23 +96,11 @@ async def send_file_to_chat(file_path: str) -> None:
         await application.bot.send_document(chat_id=GROUPID, document=open(file_path, 'rb'))
 
 
-print('Starting...')
-try:
-    ALLOW_DEBUG = os.environ['ALLOW_DEBUG']
-    if ALLOW_DEBUG == 'True':
-        ALLOW_DEBUG = True
-    else:
-        ALLOW_DEBUG = False
-except:
-    ALLOW_DEBUG = False
-
-if ALLOW_DEBUG == True:
-    print('Debugging is enabled! This will generate a screenshot and console logs on error!')
-
+logger.debug('Starting...')
 try:
     if ALLOW_DEBUG == True:
-        print('GRASS_USER: ' + os.environ['GRASS_USER'])
-        print('GRASS_PASS: ' + os.environ['GRASS_PASS'])
+        logger.debug('GRASS_USER: ' + os.environ['GRASS_USER'])
+        logger.debug('GRASS_PASS: ' + os.environ['GRASS_PASS'])
     USER = os.environ['GRASS_USER']
     PASSW = os.environ['GRASS_PASS']
 except:
@@ -93,7 +111,7 @@ except:
 
 # are they set?
 if USER == '' or PASSW == '':
-    print('Please set GRASS_USER and GRASS_PASS env variables')
+    logger.error('Please set GRASS_USER and GRASS_PASS env variables')
     exit()
 
 
@@ -108,7 +126,7 @@ def download_extension(extension_id):
     if ALLOW_DEBUG == True:
         #generate md5 of file
         md5 = hashlib.md5(open('grass.crx', 'rb').read()).hexdigest()
-        print('Extension MD5: ' + md5)
+        logger.debug('Extension MD5: ' + md5)
 
 def generate_error_report(driver):
     if ALLOW_DEBUG == False:
@@ -125,11 +143,6 @@ def generate_error_report(driver):
     # Send the photo and disconnect
     asyncio.run(send_photo_to_chat('error.png'))
 
-    # url = 'https://imagebin.ca/upload.php'
-    # files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
-    # response = requests.post(url, files=files)
-    # print(response.text)
-    print('Error report generated! Provide the above information to the developer for debugging purposes.')
 
 def get_html_data():
     html_data = driver.page_source
@@ -139,7 +152,7 @@ def get_html_data():
 
 print ('Downloading extension...')
 download_extension(extensionId)
-print('Downloaded! Installing extension and driver manager...')
+logger.debug('Downloaded! Installing extension and driver manager...')
 
 options = webdriver.ChromeOptions()
 #options.binary_location = '/usr/bin/chromium-browser'
@@ -150,21 +163,21 @@ options.add_argument("window-size=1920x1080")
 
 options.add_extension('grass.crx')
 
-print('Installed! Starting...')
+logger.debug('Installed! Starting...')
 try:
     driver = webdriver.Chrome(options=options)
 except (WebDriverException, NoSuchDriverException) as e:
-    print('Could not start with Manager! Trying to default to manual path...')
+    logger.debug('Could not start with Manager! Trying to default to manual path...')
     try:
         driver_path = "/usr/bin/chromedriver"
         service = ChromeService(executable_path=driver_path)
         driver = webdriver.Chrome(service=service, options=options)
     except (WebDriverException, NoSuchDriverException) as e:
-        print('Could not start with manual path! Exiting...')
+        logger.error('Could not start with manual path! Exiting...')
         exit()
 
 #driver.get('chrome-extension://'+extensionId+'/index.html')
-print('Loading dashboard...')
+logger.debug('Loading dashboard...')
 driver.get('https://app.getgrass.io/')
 
 # Define a wait with a timeout of 10 seconds
@@ -172,21 +185,21 @@ driver.get('https://app.getgrass.io/')
 wait = WebDriverWait(driver, 10)
 
 try:
-    print('Checking for Accept All...')    
+    logger.debug('Checking for Accept All...')    
     wait.until(EC.presence_of_element_located(By.XPATH, "//button[text()='ACCEPT ALL']")).click()
 except:
-    print('Could not find Accept All...continuing...')    
+    logger.debug('Could not find Accept All...continuing...')    
 
 try:
-    print('Waiting for login form...')
+    logger.debug('Waiting for login form...')
     wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="user"]')).send_keys(USER)
-    print('User populated!')
+    logger.debug('User populated!')
     wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="password"]')).send_keys(PASSW)
-    print('Password populated!')
+    logger.debug('Password populated!')
     wait.until(EC.presence_of_element_located(By.XPATH, '//*[@type="submit"]')).click()
-    print('Login button clicked!')
+    logger.debug('Login button clicked!')
 except:
-    print('Could not populate login form! Exiting...')
+    logger.error('Could not populate login form! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
@@ -194,14 +207,14 @@ except:
 try:
     wait.until(EC.presence_of_element_located(By.XPATH, '//*[contains(text(), "Dashboard")]'))
 except:
-    print('Could not login! Double Check your username and password! Exiting...')
+    logger.error('Could not login! Double Check your username and password! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
 
 
 
-print('Logged in! Waiting for connection...')
+logger.debug('Logged in! Waiting for connection...')
 driver.get('chrome-extension://'+extensionId+'/index.html')
 sleep = 0
 while True:
@@ -210,22 +223,22 @@ while True:
         break
     except:
         time.sleep(1)
-        print('Loading connection...')
+        logger.debug('Loading connection...')
         sleep += 1
         if sleep > 30:
-            print('Could not load connection! Exiting...')
+            logger.error('Could not load connection! Exiting...')
             generate_error_report(driver)
             driver.quit()
             exit()
 
-print('Connected! Starting API...')
+logger.debug('Connected! Starting API...')
 #flask api
 app = Flask(__name__)
 
 @app.route('/status', methods=['GET'])
 def status():
 
-    print('Getting network quality...')
+    logger.debug('Getting network quality...')
     try:
         # Find the "Network Quality" text label
         network_quality_label =  wait.until(EC.presence_of_element_located(By.XPATH, "//p[contains(text(), 'Network Quality')]"))
@@ -235,10 +248,10 @@ def status():
         network_quality = re.findall(r'\d+', network_quality_percent)[0]
     except Exception as e:
         network_quality = False
-        print('Could not get network quality!')
+        logger.error('Could not get network quality!')
         generate_error_report(driver)
 
-    print('Getting earnings...')
+    logger.debug('Getting earnings...')
     try:
         # Find the <img> tag with the alt attribute "token"
         token_image = wait.until(EC.presence_of_element_located((By.XPATH, "//img[@alt='token']")))
@@ -246,16 +259,16 @@ def status():
         epoch_earnings = token_image.find_element(By.XPATH, "following-sibling::div/p").text
     except Exception as e:
         epoch_earnings = False
-        print('Could not get earnings!')
+        logger.debug('Could not get earnings!')
         generate_error_report(driver)
     
-    print('Getting connection status...')
+    logger.debug('Getting connection status...')
     try:
         status_element = driver.find_elements(By.XPATH, '//*[contains(text(), "Grass is Connected")]')
         connected = True
     except Exception as e:
         connected = False
-        print('Could not get confirmation of connection!')
+        logger.error('Could not get confirmation of connection!')
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
