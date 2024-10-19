@@ -167,9 +167,9 @@ except (WebDriverException, NoSuchDriverException) as e:
 print('Loading dashboard...')
 driver.get('https://app.getgrass.io/')
 
-# Define a wait with a timeout of 5 seconds
+# Define a wait with a timeout of 10 seconds
 
-wait = WebDriverWait(driver, 5)
+wait = WebDriverWait(driver, 10)
 
 try:
     print('Checking for Accept All...')    
