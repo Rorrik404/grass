@@ -28,12 +28,26 @@ import sys
 ALLOW_DEBUG = os.getenv('ALLOW_DEBUG', 'False').strip().lower() == 'true'
 print (ALLOW_DEBUG)
 
-# Setup logging
-logging.basicConfig(
-    filename='app.log', 
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
-    level=logging.DEBUG if ALLOW_DEBUG else logging.ERROR  # Set level based on ALLOW_DEBUG
-)
+# Create a logger
+logger = logging.getLogger(__name__)
+
+# Set the logging level
+logger.setLevel(logging.DEBUG if ALLOW_DEBUG else logging.ERROR)
+
+# Create a formatter
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Create a file handler
+file_handler = logging.FileHandler('app.log')
+file_handler.setFormatter(formatter)
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 if ALLOW_DEBUG == True:
     logging.debug('Debugging is enabled! This will generate a screenshot and console logs on error!')
