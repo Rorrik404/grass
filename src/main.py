@@ -10,8 +10,8 @@ from webdriver_manager.core.os_manager import ChromeType
 from selenium.common.exceptions import WebDriverException, NoSuchDriverException
 
 import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application
+import asyncio
 
 # Enable logging
 logging.basicConfig(
@@ -40,12 +40,14 @@ application = Application.builder().token(BOT_TOKEN).build()
 #application.start_polling()
 print ("Telegram bot polling!")
 
-def send_photo():
-    # The path to your local photo
-    photo_path = 'error.png'
-    
+# Function to send a photo to a specific chat and then disconnect
+async def send_photo_to_chat(photo_path: str) -> None:
+    # Create the Application and pass it your bot's token
+    application = Application.builder().token(BOT_TOKEN).build()
+
     # Send the photo
-    application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
+    async with application:
+        await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
 
 extensionId = 'ilehaonighjijnmpnagapkhpcdbhclfg'
@@ -92,7 +94,7 @@ def download_extension(extension_id):
 
 
 
-def generate_error_report(driver):
+async def generate_error_report(driver):
     if ALLOW_DEBUG == False:
         return
     #grab screenshot
@@ -103,7 +105,9 @@ def generate_error_report(driver):
         for log in logs:
             f.write(str(log))
             f.write('\n')
-    send_photo()
+
+    # Send the photo and disconnect
+    asyncio.run(send_photo_to_chat('error.png'))
 
     # url = 'https://imagebin.ca/upload.php'
     # files = {'file': ('error.png', open('error.png', 'rb'), 'image/png')}
@@ -111,7 +115,7 @@ def generate_error_report(driver):
     # print(response.text)
     print('Error report generated! Provide the above information to the developer for debugging purposes.')
 
-print('Downloading extension...')
+print ('Downloading extension...')
 download_extension(extensionId)
 print('Downloaded! Installing extension and driver manager...')
 
@@ -227,7 +231,7 @@ print('Connected! Starting API...')
 app = Flask(__name__)
 
 @app.route('/')
-def get():
+async def get():
     try:
         network_quality = driver.find_element('xpath', '//*[contains(text(), "Network quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
