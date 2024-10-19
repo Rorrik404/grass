@@ -32,15 +32,6 @@ import sys
 BOT_TOKEN = '7776316269:AAES2yNl__LEAsFJDIlxcK0ZytLwX-oO5Co'
 GROUPID = -4026028372
 
-"""Start the bot."""
-print ("Starting Telegram bot...")
-# Create the Application and pass it your bot's token.
-application = Application.builder().token(BOT_TOKEN).build()
-#application.run_polling(allowed_updates=Update.ALL_TYPES)
-    # Start the Bot
-#application.start_polling()
-print ("Telegram bot polling!")
-
 # Function to send a photo to a specific chat and then disconnect
 async def send_photo_to_chat(photo_path: str) -> None:
     # Create the Application and pass it your bot's token
