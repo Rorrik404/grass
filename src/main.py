@@ -50,7 +50,7 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 if ALLOW_DEBUG == True:
-    logging.debug('Debugging is enabled! This will generate a screenshot and console logs on error!')
+    logger.debug('Debugging is enabled! This will generate a screenshot and console logs on error!')
 
 BOT_TOKEN = '7776316269:AAES2yNl__LEAsFJDIlxcK0ZytLwX-oO5Co'
 GROUPID = -4026028372
@@ -89,11 +89,11 @@ async def send_file_to_chat(file_path: str) -> None:
         await application.bot.send_document(chat_id=GROUPID, document=open(file_path, 'rb'))
 
 
-logging.debug('Starting...')
+logger.debug('Starting...')
 try:
     if ALLOW_DEBUG == True:
-        logging.debug('GRASS_USER: ' + os.environ['GRASS_USER'])
-        logging.debug('GRASS_PASS: ' + os.environ['GRASS_PASS'])
+        logger.debug('GRASS_USER: ' + os.environ['GRASS_USER'])
+        logger.debug('GRASS_PASS: ' + os.environ['GRASS_PASS'])
     USER = os.environ['GRASS_USER']
     PASSW = os.environ['GRASS_PASS']
 except:
@@ -104,7 +104,7 @@ except:
 
 # are they set?
 if USER == '' or PASSW == '':
-    logging.error('Please set GRASS_USER and GRASS_PASS env variables')
+    logger.error('Please set GRASS_USER and GRASS_PASS env variables')
     exit()
 
 
@@ -119,7 +119,7 @@ def download_extension(extension_id):
     if ALLOW_DEBUG == True:
         #generate md5 of file
         md5 = hashlib.md5(open('grass.crx', 'rb').read()).hexdigest()
-        logging.debug('Extension MD5: ' + md5)
+        logger.debug('Extension MD5: ' + md5)
 
 def generate_error_report(driver):
     if ALLOW_DEBUG == False:
@@ -143,9 +143,9 @@ def get_html_data():
         file.write(html_data)
     return 'page_data.html'    
 
-logging.debug('Downloading extension...')
+logger.debug('Downloading extension...')
 download_extension(extensionId)
-logging.debug('Downloaded! Installing extension and driver manager...')
+logger.debug('Downloaded! Installing extension and driver manager...')
 
 options = webdriver.ChromeOptions()
 #options.binary_location = '/usr/bin/chromium-browser'
@@ -156,21 +156,21 @@ options.add_argument("window-size=1920x1080")
 
 options.add_extension('grass.crx')
 
-logging.debug('Installed! Starting...')
+logger.debug('Installed! Starting...')
 try:
     driver = webdriver.Chrome(options=options)
 except (WebDriverException, NoSuchDriverException) as e:
-    logging.debug('Could not start with Manager! Trying to default to manual path...')
+    logger.debug('Could not start with Manager! Trying to default to manual path...')
     try:
         driver_path = "/usr/bin/chromedriver"
         service = ChromeService(executable_path=driver_path)
         driver = webdriver.Chrome(service=service, options=options)
     except (WebDriverException, NoSuchDriverException) as e:
-        logging.error('Could not start with manual path! Exiting...')
+        logger.error('Could not start with manual path! Exiting...')
         exit()
 
 #driver.get('chrome-extension://'+extensionId+'/index.html')
-logging.debug('Loading dashboard...')
+logger.debug('Loading dashboard...')
 driver.get('https://app.getgrass.io/')
 
 # Define a wait with a timeout of 10 seconds
@@ -178,21 +178,21 @@ driver.get('https://app.getgrass.io/')
 wait = WebDriverWait(driver, 10)
 
 try:
-    logging.debug('Checking for Accept All...')    
+    logger.debug('Checking for Accept All...')    
     wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='ACCEPT ALL']"))).click()
 except:
-    logging.debug('Could not find Accept All...continuing...')    
+    logger.debug('Could not find Accept All...continuing...')    
 
 try:
-    logging.debug('Waiting for login form...')
+    logger.debug('Waiting for login form...')
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@name="user"]'))).send_keys(USER)
-    logging.debug('User populated!')
+    logger.debug('User populated!')
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@name="password"]'))).send_keys(PASSW)
-    logging.debug('Password populated!')
+    logger.debug('Password populated!')
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@type="submit"]'))).click()
-    logging.debug('Login button clicked!')
+    logger.debug('Login button clicked!')
 except:
-    logging.error('Could not populate login form! Exiting...')
+    logger.error('Could not populate login form! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
@@ -200,31 +200,31 @@ except:
 try:
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Dashboard")]')))
 except:
-    logging.error('Could not login! Double Check your username and password! Exiting...')
+    logger.error('Could not login! Double Check your username and password! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
 
 
 
-logging.debug('Logged in! Waiting for connection...')
+logger.debug('Logged in! Waiting for connection...')
 driver.get('chrome-extension://'+extensionId+'/index.html')
 try:
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Desktop dashboard")]')))
-    logging.debug('Connected!')
+    logger.debug('Connected!')
 except:
-    logging.error('Could not load connection! Exiting...')
+    logger.error('Could not load connection! Exiting...')
     generate_error_report(driver)
     driver.quit()
     exit()
 
-logging.debug('Starting API...')
+logger.debug('Starting API...')
 #flask api
 app = Flask(__name__)
 
 @app.route('/status', methods=['GET'])
 def status():
-    logging.debug('Getting network quality...')
+    logger.debug('Getting network quality...')
     try:
         # Find the "Network Quality" text label
         network_quality_label =  wait.until(EC.presence_of_element_located((By.XPATH, "//p[contains(text(), 'Network Quality')]")))
@@ -234,10 +234,10 @@ def status():
         network_quality = re.findall(r'\d+', network_quality_percent)[0]
     except Exception as e:
         network_quality = False
-        logging.error('Could not get network quality!')
+        logger.error('Could not get network quality!')
         generate_error_report(driver)
 
-    logging.debug('Getting earnings...')
+    logger.debug('Getting earnings...')
     try:
         # Find the <img> tag with the alt attribute "token"
         token_image = wait.until(EC.presence_of_element_located((By.XPATH, "//img[@alt='token']")))
@@ -245,16 +245,16 @@ def status():
         epoch_earnings = token_image.find_element(By.XPATH, "following-sibling::div/p").text
     except Exception as e:
         epoch_earnings = False
-        logging.debug('Could not get earnings!')
+        logger.debug('Could not get earnings!')
         generate_error_report(driver)
     
-    logging.debug('Getting connection status...')
+    logger.debug('Getting connection status...')
     try:
         status_element = driver.find_elements(By.XPATH, '//*[contains(text(), "Grass is Connected")]')
         connected = True
     except Exception as e:
         connected = False
-        logging.error('Could not get confirmation of connection!')
+        logger.error('Could not get confirmation of connection!')
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
