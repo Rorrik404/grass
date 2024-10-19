@@ -227,21 +227,20 @@ def status():
 
     print('Getting network quality...')
     try:
-        network_quality = driver.find_element(By.XPATH, '//*[contains(text(), "Network Quality")]').text
-        network_quality = re.findall(r'\d+', network_quality)[0]
+        # network_quality = driver.find_element(By.XPATH, '//*[contains(text(), "Network Quality")]').text
+        # network_quality = re.findall(r'\d+', network_quality)[0]
 
-        print ('Secondary Attempt')
+
         # Locate the element containing the "Network Quality" text
         network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
         parent_div = network_quality_label.find_element(By.XPATH, './..')
         percent_element = parent_div.find_element(By.XPATH, ".//p[contains(text(), '%')]")
 
         # Get the text value
-        percent_value = percent_element.text
-        print ("Second Attempt Network value: ", percent_value)
-    except:
+        network_quality = percent_element.text
+    except Exception as e:
         network_quality = False
-        print('Could not get network quality!')
+        print('Could not get network quality!: ' + str(e))
         generate_error_report(driver)
 
     print('Getting earnings...')
@@ -252,16 +251,16 @@ def status():
         print (token)
     except Exception as e:
         epoch_earnings = False
-        print('Could not get earnings!')
+        print('Could not get earnings!: ' + str(e))
         generate_error_report(driver)
     
     print('Getting connection status...')
     try:
         status_element = driver.find_elements(By.XPATH, '//*[contains(text(), "Grass is Connected")]')
         connected = True
-    except:
+    except Exception as e:
         connected = False
-        print('Could not get confirmation of connection!')
+        print('Could not get confirmation of connection!: ' + str(e))
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
@@ -280,5 +279,5 @@ def showme():
     
     return {'Status':'Data Sent!'}
 
-app.run(host='0.0.0.0',port=80, debug=ALLOW_DEBUG)
+app.run(host='0.0.0.0',port=80, debug=ALLOW_DEBUG, use_reloader=False)
 driver.quit()
