@@ -234,7 +234,7 @@ def status():
         # Locate the element containing the "Network Quality" text
         network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
         parent_div = network_quality_label.find_element(By.XPATH, './..')
-        percent_element = parent_div.find_element(By.XPATH, ".//p[contains(text(), '%')]")
+        percent_element = parent_div.find_element(By.XPATH, ".//*[contains(text(), '%')]")
 
         # Get the text value
         network_quality = percent_element.text
