@@ -224,36 +224,44 @@ app = Flask(__name__)
 
 @app.route('/status', methods=['GET'])
 def status():
+
+    print('Getting network quality...')
     try:
-        network_quality = driver.find_element('xpath', '//*[contains(text(), "Network Quality")]').text
-        network_quality = re.findall(r'\d+', network_quality)[0]
+        # Locate the element containing the "Network Quality" text
+        network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
+
+        # Get the parent element and find the next sibling that contains the percentage
+        parent_div = network_quality_label.find_element(By.XPATH, './..')  # Navigate to the parent div
+
+        # Look for the <p> tag that contains the percentage within this parent div
+        percent_element = parent_div.find_element(By.XPATH, ".//p[contains(text(), '%')]")
+
+        # Get the text value
+        network_quality = percent_element.text
     except:
         network_quality = False
         print('Could not get network quality!')
         generate_error_report(driver)
 
+
+    print('Getting earnings...')
     try:
-        token = driver.find_element('xpath', '//*[@alt="token"]')
-        token = token.find_element('xpath', 'following-sibling::div')
+        token = driver.find_element(By.XPATH, '//img[@alt="token"]')
+        token = token.find_element(By.XPATH('./following-sibling::div//p'))
+
         epoch_earnings = token.text
     except Exception as e:
         epoch_earnings = False
         print('Could not get earnings!')
         generate_error_report(driver)
     
+    print('Getting connection status...')
     try:
-        #find all chakra-badge
-        badges = driver.find_elements('xpath', '//*[contains(@class, "chakra-badge")]')
-        #find the one with chakra-text that contains either "Connected" or "Disconnected"
-        connected = False
-        for badge in badges:
-            text = badge.find_element('xpath', 'child::div//p').text
-            if 'Connected' in text:
-                connected = True
-                break
+        status_element = driver.find_elements(By.XPATH, '//*[contains(text(), "Grass is Connected")]')
+        connected = True
     except:
         connected = False
-        print('Could not get connection status!')
+        print('Could not get confirmation of connection!')
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
