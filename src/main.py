@@ -197,8 +197,8 @@ print('Connected! Starting API...')
 #flask api
 app = Flask(__name__)
 
-@app.route('/')
-def get():
+@app.route('/status', methods=['GET'])
+def status():
     try:
         network_quality = driver.find_element('xpath', '//*[contains(text(), "Network quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
