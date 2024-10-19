@@ -229,6 +229,16 @@ def status():
     try:
         network_quality = driver.find_element(By.XPATH, '//*[contains(text(), "Network Quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
+
+        print ('Secondary Attempt')
+        # Locate the element containing the "Network Quality" text
+        network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
+        parent_div = network_quality_label.find_element(By.XPATH, './..')
+        percent_element = parent_div.find_element(By.XPATH, ".//p[contains(text(), '%')]")
+
+        # Get the text value
+        percent_value = percent_element.text
+        print ("Second Attempt Network value: ", percent_value)
     except:
         network_quality = False
         print('Could not get network quality!')
@@ -239,6 +249,7 @@ def status():
         token = driver.find_element(By.XPATH, '//*[@alt="token"]')
         token = token.find_element(By.XPATH('following-sibling::div'))
         epoch_earnings = token.text
+        print (token)
     except Exception as e:
         epoch_earnings = False
         print('Could not get earnings!')
@@ -264,8 +275,8 @@ def showme():
     asyncio.run(send_photo_to_chat('error.png')) 
     #grab console logs
     asyncio.run(send_file_to_chat(get_html_data()))
-    logs = driver.get_log('browser') 
-    asyncio.run(send_message_to_chat('Console logs: ' + str(logs)))
+    #logs = driver.get_log('browser') 
+    #asyncio.run(send_message_to_chat('Console logs: ' + str(logs)))
     
     return {'Status':'Data Sent!'}
 
