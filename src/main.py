@@ -56,13 +56,6 @@ CRX_URL = "https://clients2.google.com/service/update2/crx?response=redirect&pro
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
 
 try:
-    USER = os.environ['GRASS_USER']
-    PASSW = os.environ['GRASS_PASS']
-except:
-    USER = ''
-    PASSW = ''
-
-try:
     ALLOW_DEBUG = os.environ['ALLOW_DEBUG']
     if ALLOW_DEBUG == 'True':
         ALLOW_DEBUG = True
@@ -71,13 +64,27 @@ try:
 except:
     ALLOW_DEBUG = False
 
+if ALLOW_DEBUG == True:
+    print('Debugging is enabled! This will generate a screenshot and console logs on error!')
+
+try:
+    if ALLOW_DEBUG == True:
+        print('GRASS_USER: ' + os.environ['GRASS_USER'])
+        print('GRASS_PASS: ' + os.environ['GRASS_PASS'])
+    USER = os.environ['GRASS_USER']
+    PASSW = os.environ['GRASS_PASS']
+except:
+    USER = ''
+    PASSW = ''
+
+
+
 # are they set?
 if USER == '' or PASSW == '':
     print('Please set GRASS_USER and GRASS_PASS env variables')
     exit()
 
-if ALLOW_DEBUG == True:
-    print('Debugging is enabled! This will generate a screenshot and console logs on error!')
+
 
 
 #https://gist.github.com/ckuethe/fb6d972ecfc590c2f9b8

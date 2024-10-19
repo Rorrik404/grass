@@ -6,7 +6,6 @@ RUN apk add --update --no-cache py3-pip
 
 WORKDIR /usr/src/app
 COPY src .
-COPY .env .
 RUN pip install --no-cache-dir -r ./requirements.txt --break-system-packages
 
 CMD [ "python", "./main.py" ]
