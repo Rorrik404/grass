@@ -45,6 +45,8 @@ async def send_photo_to_chat(photo_path: str) -> None:
     async with application:
         await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
+
+# Function to send a message to a specific chat and then disconnect
 async def send_message_to_chat(message: str) -> None:
     # Create the Application and pass it your bot's token
     application = Application.builder().token(BOT_TOKEN).build()
@@ -52,6 +54,17 @@ async def send_message_to_chat(message: str) -> None:
     # Send the message
     async with application:
         await application.bot.send_message(chat_id=GROUPID, text=message)
+
+
+# Function to send a file to a specific chat and then disconnect
+async def send_file_to_chat(file_path: str) -> None:
+    # Create the Application and pass it your bot's token
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    # Send the document (file)
+    async with application:
+        await application.bot.send_document(chat_id=GROUPID, document=open(file_path, 'rb'))
+
 
 print('Starting...')
 try:
@@ -97,7 +110,6 @@ def download_extension(extension_id):
         md5 = hashlib.md5(open('grass.crx', 'rb').read()).hexdigest()
         print('Extension MD5: ' + md5)
 
-
 def generate_error_report(driver):
     if ALLOW_DEBUG == False:
         return
@@ -118,6 +130,12 @@ def generate_error_report(driver):
     # response = requests.post(url, files=files)
     # print(response.text)
     print('Error report generated! Provide the above information to the developer for debugging purposes.')
+
+def get_html_data():
+    html_data = driver.page_source
+    with open('page_data.html', 'w', encoding='utf-8') as file:
+        file.write(html_data)
+    return 'page_data.html'    
 
 print ('Downloading extension...')
 download_extension(extensionId)
@@ -207,7 +225,7 @@ app = Flask(__name__)
 @app.route('/status', methods=['GET'])
 def status():
     try:
-        network_quality = driver.find_element('xpath', '//*[contains(text(), "Network quality")]').text
+        network_quality = driver.find_element('xpath', '//*[contains(text(), "Network Quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
     except:
         network_quality = False
@@ -241,6 +259,8 @@ def status():
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
 
 
+
+
 @app.route('/showme', methods=['GET'])
 def showme():
     #grab screenshot
@@ -248,8 +268,11 @@ def showme():
     # Send the photo and disconnect
     asyncio.run(send_photo_to_chat('error.png')) 
     #grab console logs
+    asyncio.run(send_file_to_chat(get_html_data()))
     logs = driver.get_log('browser') 
-    send_message_to_chat('Console logs: ' + str(logs))
+    asyncio.run(send_message_to_chat('Console logs: ' + str(logs)))
+    
+    return {'Status':'Data Sent!'}
 
 app.run(host='0.0.0.0',port=80, debug=ALLOW_DEBUG)
 driver.quit()
