@@ -8,5 +8,9 @@ WORKDIR /usr/src/app
 COPY src .
 RUN pip install --no-cache-dir -r ./requirements.txt --break-system-packages
 
+# Fix for Python Print Delay
+ENV PYTHONUNBUFFERED=1
+
+
 CMD [ "python", "./main.py" ]
 EXPOSE 80
