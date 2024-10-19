@@ -227,22 +227,12 @@ def status():
 
     print('Getting network quality...')
     try:
-        # Locate the element containing the "Network Quality" text
-        network_quality_label = driver.find_element(By.XPATH, "//p[contains(text(), 'Network Quality')]")
-
-        # Get the parent element and find the next sibling that contains the percentage
-        parent_div = network_quality_label.find_element(By.XPATH, './..')  # Navigate to the parent div
-
-        # Look for the <p> tag that contains the percentage within this parent div
-        percent_element = parent_div.find_element(By.XPATH, ".//p[contains(text(), '%')]")
-
-        # Get the text value
-        network_quality = percent_element.text
+        network_quality = driver.find_element('xpath', '//*[contains(text(), "Network Quality")]').text
+        network_quality = re.findall(r'\d+', network_quality)[0]
     except:
         network_quality = False
         print('Could not get network quality!')
         generate_error_report(driver)
-
 
     print('Getting earnings...')
     try:
@@ -265,8 +255,6 @@ def status():
         generate_error_report(driver)
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
-
-
 
 
 @app.route('/showme', methods=['GET'])
