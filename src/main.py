@@ -94,7 +94,7 @@ def download_extension(extension_id):
 
 
 
-async def generate_error_report(driver):
+def generate_error_report(driver):
     if ALLOW_DEBUG == False:
         return
     #grab screenshot
@@ -159,6 +159,7 @@ while True:
         if sleep > 15:
             print('Could not load login form! Exiting...')
             generate_error_report(driver)
+
             driver.quit()
             exit()
 
@@ -231,7 +232,7 @@ print('Connected! Starting API...')
 app = Flask(__name__)
 
 @app.route('/')
-async def get():
+def get():
     try:
         network_quality = driver.find_element('xpath', '//*[contains(text(), "Network quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
