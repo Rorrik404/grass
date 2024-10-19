@@ -26,6 +26,7 @@ import sys
 
 # Setup env variables
 ALLOW_DEBUG = os.getenv('ALLOW_DEBUG', 'False').strip().lower() == 'true'
+print (ALLOW_DEBUG)
 
 # Setup logging
 logging.basicConfig(
@@ -128,7 +129,7 @@ def get_html_data():
         file.write(html_data)
     return 'page_data.html'    
 
-print ('Downloading extension...')
+logging.debug('Downloading extension...')
 download_extension(extensionId)
 logging.debug('Downloaded! Installing extension and driver manager...')
 
