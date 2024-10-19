@@ -24,37 +24,15 @@ from flask import Flask
 import hashlib
 import sys
 
-try:
-    ALLOW_DEBUG = os.environ['ALLOW_DEBUG']
-    if ALLOW_DEBUG == 'True':
-        ALLOW_DEBUG = True
-    else:
-        ALLOW_DEBUG = False
-except:
-    ALLOW_DEBUG = False
+# Setup env variables
+ALLOW_DEBUG = os.getenv('ALLOW_DEBUG', 'False').strip().lower() == 'true'
 
 # Setup logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('app.log')
-console_handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# Set the log level
-if ALLOW_DEBUG == True:
-    file_handler.setLevel(logging.DEBUG)
-    console_handler.setLevel(logging.DEBUG)
-else:
-    file_handler.setLevel(logging.ERROR)
-    console_handler.setLevel(logging.ERROR)
-
-# Set the formatter
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-# Add the handlers to the logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger = logging.basicConfig(
+    filename='app.log', 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
+    level=logging.DEBUG if ALLOW_DEBUG else logging.ERROR  # Set level based on ALLOW_DEBUG
+)
 
 if ALLOW_DEBUG == True:
     logger.debug('Debugging is enabled! This will generate a screenshot and console logs on error!')
@@ -186,17 +164,17 @@ wait = WebDriverWait(driver, 10)
 
 try:
     logger.debug('Checking for Accept All...')    
-    wait.until(EC.presence_of_element_located(By.XPATH, "//button[text()='ACCEPT ALL']")).click()
+    wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='ACCEPT ALL']"))).click()
 except:
     logger.debug('Could not find Accept All...continuing...')    
 
 try:
     logger.debug('Waiting for login form...')
-    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="user"]')).send_keys(USER)
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@name="user"]'))).send_keys(USER)
     logger.debug('User populated!')
-    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@name="password"]')).send_keys(PASSW)
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@name="password"]'))).send_keys(PASSW)
     logger.debug('Password populated!')
-    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@type="submit"]')).click()
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@type="submit"]'))).click()
     logger.debug('Login button clicked!')
 except:
     logger.error('Could not populate login form! Exiting...')
@@ -205,7 +183,7 @@ except:
     exit()
 
 try:
-    wait.until(EC.presence_of_element_located(By.XPATH, '//*[contains(text(), "Dashboard")]'))
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Dashboard")]')))
 except:
     logger.error('Could not login! Double Check your username and password! Exiting...')
     generate_error_report(driver)
@@ -216,32 +194,25 @@ except:
 
 logger.debug('Logged in! Waiting for connection...')
 driver.get('chrome-extension://'+extensionId+'/index.html')
-sleep = 0
-while True:
-    try:
-        driver.find_element(By.XPATH, '//*[contains(text(), "Desktop dashboard")]')
-        break
-    except:
-        time.sleep(1)
-        logger.debug('Loading connection...')
-        sleep += 1
-        if sleep > 30:
-            logger.error('Could not load connection! Exiting...')
-            generate_error_report(driver)
-            driver.quit()
-            exit()
+try:
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Desktop dashboard")]')))
+    logger.debug('Connected!')
+except:
+    logger.error('Could not load connection! Exiting...')
+    generate_error_report(driver)
+    driver.quit()
+    exit()
 
-logger.debug('Connected! Starting API...')
+logger.debug('Starting API...')
 #flask api
 app = Flask(__name__)
 
 @app.route('/status', methods=['GET'])
 def status():
-
     logger.debug('Getting network quality...')
     try:
         # Find the "Network Quality" text label
-        network_quality_label =  wait.until(EC.presence_of_element_located(By.XPATH, "//p[contains(text(), 'Network Quality')]"))
+        network_quality_label =  wait.until(EC.presence_of_element_located((By.XPATH, "//p[contains(text(), 'Network Quality')]")))
         # Now find the following <p> element that contains the percentage value
         network_quality_percent = network_quality_label.find_element(By.XPATH, "following-sibling::p").text
         # Get the text value
