@@ -43,11 +43,11 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 
 # Set the log level
 if ALLOW_DEBUG == True:
-    file_handler.setLevel(logging.debug)
+    file_handler.setLevel(logging.DEBUG)
     console_handler.setLevel(logging.DEBUG)
 else:
-    file_handler.setLevel(logging.error)
-    console_handler.setLevel(logging.error)
+    file_handler.setLevel(logging.ERROR)
+    console_handler.setLevel(logging.ERROR)
 
 # Set the formatter
 file_handler.setFormatter(formatter)
