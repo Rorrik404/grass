@@ -227,7 +227,7 @@ def status():
 
     print('Getting network quality...')
     try:
-        network_quality = driver.find_element('xpath', '//*[contains(text(), "Network Quality")]').text
+        network_quality = driver.find_element(By.XPATH, '//*[contains(text(), "Network Quality")]').text
         network_quality = re.findall(r'\d+', network_quality)[0]
     except:
         network_quality = False
@@ -236,9 +236,8 @@ def status():
 
     print('Getting earnings...')
     try:
-        token = driver.find_element(By.XPATH, '//img[@alt="token"]')
-        token = token.find_element(By.XPATH('./following-sibling::div//p'))
-
+        token = driver.find_element(By.XPATH, '//*[@alt="token"]')
+        token = token.find_element(By.XPATH('following-sibling::div'))
         epoch_earnings = token.text
     except Exception as e:
         epoch_earnings = False
