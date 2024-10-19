@@ -45,6 +45,13 @@ async def send_photo_to_chat(photo_path: str) -> None:
     async with application:
         await application.bot.send_photo(chat_id=GROUPID, photo=open(photo_path, 'rb'))
 
+async def send_message_to_chat(message: str) -> None:
+    # Create the Application and pass it your bot's token
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    # Send the message
+    async with application:
+        await application.bot.send_message(chat_id=GROUPID, text=message)
 
 print('Starting...')
 try:
@@ -233,6 +240,16 @@ def status():
 
     return {'connected': connected, 'network_quality': network_quality, 'epoch_earnings': epoch_earnings}
 
+
+@app.route('/showme', methods=['GET'])
+def showme():
+    #grab screenshot
+    driver.save_screenshot('error.png')
+    # Send the photo and disconnect
+    asyncio.run(send_photo_to_chat('error.png')) 
+    #grab console logs
+    logs = driver.get_log('browser') 
+    send_message_to_chat('Console logs: ' + str(logs))
 
 app.run(host='0.0.0.0',port=80, debug=ALLOW_DEBUG)
 driver.quit()
